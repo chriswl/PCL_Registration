@@ -10,5 +10,8 @@ include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
-add_executable (pcl_icp main.cpp pcl_tools.cpp)
-target_link_libraries (pcl_icp ${PCL_LIBRARIES})
+# add_executable (pcl_icp main.cpp pcl_tools.cpp)
+# target_link_libraries (pcl_icp ${PCL_LIBRARIES})
+
+add_executable (downsampler downsampler.cpp pcl_tools.cpp)
+target_link_libraries (downsampler ${PCL_LIBRARIES})

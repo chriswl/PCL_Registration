@@ -41,7 +41,7 @@ public:
     int apply_icp(std::string path_in, std::string path_out);
     pcl::PointCloud<PointT>::Ptr loadPCD(std::string path);
     pcl::PointCloud<PointT>::Ptr transform_pcd(pcl::PointCloud<PointT>::Ptr source_cloud, Eigen::Matrix4f transform_matrix);
-    int downsample_pcd();
+    int downsample_all_pcd();
     void viewPCD(pcl::PointCloud<PointT>::Ptr cloud, std::string name="point_cloud", int r=255, int g=255, int b=255);
     void viewICPResult(pcl::PointCloud<PointT>::Ptr cloud_in, pcl::PointCloud<PointT>::Ptr cloud_targ, pcl::PointCloud<PointT>::Ptr cloud_aligned);
     pcl::PointCloud<PointT>::Ptr getSlice(pcl::PointCloud<PointT>::Ptr cloud, float z1, float z2, std::string field_name = "z");
@@ -74,5 +74,7 @@ public:
     Eigen::Matrix4f transformations_icp[83], transformations_ndt[83];
 
 };
+
+int downsample_pcd(std::string filename, std::string out_filename, float leaf_size);
 
 #endif // PCL_TOOLS_H

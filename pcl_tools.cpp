@@ -1082,13 +1082,12 @@ int pcl_tools::scale_pcd(float scaling_factor){
 
 
 
-int pcl_tools::downsample_pcd(){
+int pcl_tools::downsample_all_pcd(){
     //struct timespec t1, t2;
     //double elapsed_time;
     //volatile long long i;
 
     for(int i=1; i<=MAX_NUM_SCANS; i++){
-
         stringstream check_label_filename;
         check_label_filename.clear();
         check_label_filename << "/home/mustafasezer/dataset/Original/final_labeled_images/scan_" << i << "_label.png";
@@ -1100,49 +1099,47 @@ int pcl_tools::downsample_pcd(){
             continue;
         }
 
-
-
-        //clock_gettime(CLOCK_MONOTONIC,  &t1);
-
-        pcl::PCLPointCloud2::Ptr cloud (new pcl::PCLPointCloud2 ());
-        pcl::PCLPointCloud2::Ptr cloud_filtered (new pcl::PCLPointCloud2 ());
-
-        // Fill in the cloud data
-        pcl::PCDReader reader;
-        // Replace the path below with the path where you saved your file
         stringstream filename;
         filename.clear();
         filename << "/home/mustafasezer/dataset/Original/scan_" << i << ".pcd";
-        cout << filename.str() << endl;
-        reader.read (filename.str(), *cloud);
 
-        std::cerr << "PointCloud before filtering: " << cloud->width * cloud->height
-                  << " data points (" << pcl::getFieldsList (*cloud) << ")."<< endl;
-
-        // Create the filtering object
-        pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
-        sor.setInputCloud (cloud);
-        sor.setLeafSize (0.2f, 0.2f, 0.2f);
-        sor.filter (*cloud_filtered);
-
-        std::cerr << "PointCloud after filtering: " << cloud_filtered->width * cloud_filtered->height
-                  << " data points (" << pcl::getFieldsList (*cloud_filtered) << ")." << endl;
-
-        pcl::PCDWriter writer;
-        stringstream filename2;
-        filename2 << "/home/mustafasezer/dataset/Downsampled_new/scan_" << i << ".pcd";
-        cout << filename2.str() << endl;
-        writer.write (filename2.str(), *cloud_filtered,
-                      Eigen::Vector4f::Zero (), Eigen::Quaternionf::Identity (), false);
-
-        //clock_gettime(CLOCK_MONOTONIC,  &t2);
-        //elapsed_time = (t2.tv_sec - t1.tv_sec) + (double) (t2.tv_nsec - t1.tv_nsec) * 1e-9;
-
-        //std::cout << "Point cloud subsampled in " << elapsed_time << " seconds" << std::endl;
-
-        cloud.reset();
-        cloud_filtered.reset();
     }
-
     return (0);
+}
+
+
+int downsample_pcd(std::string filename, std::string filename2, float leaf_size) {
+    timespec t1, t2;
+    clock_gettime(CLOCK_MONOTONIC,  &t1);
+
+    pcl::PCLPointCloud2::Ptr cloud (new pcl::PCLPointCloud2 ());
+    pcl::PCLPointCloud2::Ptr cloud_filtered (new pcl::PCLPointCloud2 ());
+
+    // Fill in the cloud data
+    pcl::PCDReader reader;
+    // Replace the path below with the path where you saved your file
+    cout << filename << endl;
+    reader.read(filename, *cloud);
+
+    std::cerr << "PointCloud before filtering: " << cloud->width * cloud->height
+        << " data points (" << pcl::getFieldsList (*cloud) << ")."<< endl;
+
+    // Create the filtering object
+    pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
+    sor.setInputCloud(cloud);
+    sor.setLeafSize(leaf_size, leaf_size, leaf_size);
+    sor.filter(*cloud_filtered);
+
+    std::cerr << "PointCloud after filtering: " << cloud_filtered->width * cloud_filtered->height
+        << " data points (" << pcl::getFieldsList (*cloud_filtered) << ")." << endl;
+
+    pcl::PCDWriter writer;
+    writer.write (filename2, *cloud_filtered,
+            Eigen::Vector4f::Zero (), Eigen::Quaternionf::Identity (), false);
+
+    clock_gettime(CLOCK_MONOTONIC,  &t2);
+    double elapsed_time = (t2.tv_sec - t1.tv_sec) + (double) (t2.tv_nsec - t1.tv_nsec) * 1e-9;
+
+    std::cout << "Point cloud subsampled in " << elapsed_time << " seconds" << std::endl;
+    return(0);
 }

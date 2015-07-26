@@ -17,18 +17,16 @@ include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
-# add_executable (pcl_icp main.cpp pcl_tools.cpp)
-# target_link_libraries (pcl_icp ${PCL_LIBRARIES})
+add_executable (pcl_icp src/main.cpp src/pcl_tools.cpp)
+target_link_libraries (pcl_icp ${PCL_LIBRARIES})
 
-# add_executable (downsampler downsampler.cpp pcl_tools.cpp)
-# target_link_libraries (downsampler ${PCL_LIBRARIES})
-add_executable (combiner combiner.cpp pcl_tools.cpp)
+add_executable (downsampler src/downsampler.cpp src/pcl_tools.cpp)
+target_link_libraries (downsampler ${PCL_LIBRARIES})
+
+add_executable (combiner src/combiner.cpp src/pcl_tools.cpp)
 target_link_libraries (combiner ${PCL_LIBRARIES} ${catkin_LIBRARIES})
 
 
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES my_pcl_tutorial
-#  CATKIN_DEPENDS pcl_conversions pcl_ros roscpp sensor_msgs
-#  DEPENDS system_lib
 )

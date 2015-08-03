@@ -33,17 +33,39 @@ int main(int argc, char** argv) {
     ros::NodeHandle nh;
 
     tf::TransformListener listener;
+    ros::Duration(0.5).sleep(); // to update transforms
 
-    ros::Duration(0.5).sleep();
+    if (argc == 1) {
+        std::cout << "Usage: combiner scaling_factor(as float) pcd_filenames " << std::endl;
+        return -1;
+    }
+
+    float scaling_factor;
+    scaling_factor = std::strtof(argv[1], NULL);
+    if (scaling_factor == 0.0) {
+        std::cout << "No scaling factor given!! Aborting." << std::endl;
+        return -1;
+    }
+
     sensor_msgs::PointCloud2 total_cloud;
-    for (int i=1; i < argc; i++) {
+    for (int i=2; i < argc; i++) {
         std::string filename(argv[i]);
-        std::cout << "Working on " << filename << std::endl;
+        std::cout << "Working on " << filename << ", scaling!! " << scaling_factor << std::endl;
 
         sensor_msgs::PointCloud2 cloud;
         pcl::io::loadPCDFile(filename, cloud);
 
         std::cout << "loaded " << filename << std::endl;
+        pcl::PointCloud<pcl::PointXYZRGB> scale_cloud;
+        pcl::fromROSMsg(cloud, scale_cloud);
+
+        for (size_t j = 0; j < scale_cloud.points.size (); ++j){
+            scale_cloud.points[j].x = scaling_factor*scale_cloud.points[j].x;
+            scale_cloud.points[j].y = scaling_factor*scale_cloud.points[j].y;
+            scale_cloud.points[j].z = scaling_factor*scale_cloud.points[j].z;
+        }
+
+        pcl::toROSMsg(scale_cloud, cloud);
         std::stringstream frame;
         frame << "scene_";
 

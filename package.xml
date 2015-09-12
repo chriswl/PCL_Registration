@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>pcl_icp</name>
+  <name>pcl_registration</name>
   <version>0.0.0</version>
   <description>The my_pcl_tutorial package</description>
 

@@ -10,22 +10,26 @@
 #include <sstream>
 #include <iostream> //std::cout
 
+#include <boost/regex.hpp>
+#include <boost/filesystem.hpp>
 
-std::vector<int> parse_number(std::string name) {
-    std::vector<int> values;
-    for(int i=0; i < name.size(); ++i) {
-        int value;
-        std::stringstream ss;
-        ss << name.at(i);
-        if (ss >> value) {//return false if conversion does not succeed
-            values.push_back(value);
-            // std::cout <<" v " << value << " " << ss.str() <<  std::endl;
-        } else if (!values.empty()) {
-            break;
-        }
+int parse_scan_number(std::string pcd_filename) {
+    //get scan number from filename
+    int scan_index = -1;
+    boost::filesystem::path p(pcd_filename);
+    boost::regex expr("\\w*_(\\d+)\\.[\\w.]*");
+    boost::smatch what;
+    std::string fn(p.filename().string());
+    if (boost::regex_search(fn, what, expr))
+    {
+        scan_index = std::atoi(what[1].str().c_str());
+        return scan_index;
+    } else {
+        std::cerr << "could not determine scan number. Quitting" << std::endl;
+        return (-1);
     }
-    return values;
 }
+
 
 int main(int argc, char** argv) {
 
@@ -67,14 +71,8 @@ int main(int argc, char** argv) {
 
         pcl::toROSMsg(scale_cloud, cloud);
         std::stringstream frame;
-        frame << "scene_";
+        frame << "scene_" << parse_scan_number(filename);;
 
-        std::vector<int> v;
-        v = parse_number(filename);
-        for(std::vector<int>::iterator it = v.begin(); it != v.end(); ++it) {
-            frame << *it;
-            // std::cout << *it;
-        }
         cloud.header.frame_id = frame.str();
 
         std::cout << "Looking up transform " << frame.str() << " to map" << std::endl;

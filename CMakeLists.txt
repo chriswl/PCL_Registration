@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
 set(CMAKE_BUILD_TYPE Debug)
 
-project(pcl_icp)
+project(pcl_registration)
 
 find_package(PCL 1.2 REQUIRED)
 
@@ -11,6 +11,10 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_ros
   roscpp
   sensor_msgs
+)
+
+catkin_package(
+#  INCLUDE_DIRS include
 )
 
 include_directories(${PCL_INCLUDE_DIRS})
@@ -27,6 +31,3 @@ add_executable (combiner src/combiner.cpp src/pcl_tools.cpp)
 target_link_libraries (combiner ${PCL_LIBRARIES} ${catkin_LIBRARIES})
 
 
-catkin_package(
-#  INCLUDE_DIRS include
-)

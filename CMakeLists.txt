@@ -27,7 +27,3 @@ target_link_libraries (pcl_icp ${PCL_LIBRARIES})
 add_executable (downsampler src/downsampler.cpp src/pcl_tools.cpp)
 target_link_libraries (downsampler ${PCL_LIBRARIES})
 
-add_executable (combiner src/combiner.cpp src/pcl_tools.cpp)
-target_link_libraries (combiner ${PCL_LIBRARIES} ${catkin_LIBRARIES})
-
-

@@ -94,8 +94,9 @@ int main(int argc, char **argv) {
             continue;
         }
         stringstream target_filename, input_filename;
-        input_filename << config->get_original_pointcloud_directory() << "cloud_" << i << "_0.1.pcd";
-        target_filename << config->get_original_pointcloud_directory() << "cloud_" << pcl_tool.transformations[i-1].parent_id << "_0.1.pcd";
+        input_filename << config->get_original_pointcloud_directory() << "cloud_" << i << "_" << config->get_resolution() << ".pcd";
+        target_filename << config->get_original_pointcloud_directory() << "cloud_" <<
+            pcl_tool.transformations[i-1].parent_id << "_" << config->get_resolution() << ".pcd";
         string strtarget_filename = target_filename.str();
         string strinput_filename = input_filename.str();
         if (!file_exists (strtarget_filename.c_str()))
@@ -188,7 +189,7 @@ int main(int argc, char **argv) {
         ndt_result << transform_matrix_ndt << std::endl << std::endl;
 
         stringstream output_filename;
-        output_filename << config->get_output_scan_directory() << "scan_" << i << "_0.1.pcd";
+        output_filename << config->get_output_scan_directory() << "scan_" << i << "_" << config->get_resolution() << ".pcd";
 
         /*pcl_tools::transformation_relation current_transform;
         current_transform = pcl_tool.transformations[i-1];
@@ -224,7 +225,7 @@ int main(int argc, char **argv) {
             cloud_in_rgb = pcl_tool.getSliceRGB(cloud_in_rgb, -50, 50, "x");
             cloud_in_rgb = pcl_tool.getSliceRGB(cloud_in_rgb, -50, 50, "y");
             stringstream filtered_rgb_filename;
-            filtered_rgb_filename << config->get_output_scan_directory() << "filt_cloud_" << i << "_0.1.pcd";
+            filtered_rgb_filename << config->get_output_scan_directory() << "filt_cloud_" << i << "_" << config->get_resolution() << ".pcd";
             pcl::io::savePCDFileASCII (filtered_rgb_filename.str(), *cloud_in_rgb);
         }
 

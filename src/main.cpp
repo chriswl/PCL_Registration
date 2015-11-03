@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
 
     pcl_tools pcl_tool(config);
 
-    pcl_tool.getInitialGuesses(config->get_tf_directory() + "Initial Guesses.txt");
+    pcl_tool.getInitialGuesses(config->get_tf_directory() + "initial_guesses.txt");
 
     fstream icp_result, ndt_result;
     icp_result.open((config->get_tf_directory() + "icp_results.txt").c_str(), ios::out);
@@ -72,7 +72,6 @@ int main(int argc, char **argv) {
     fstream overall_icp, overall_ndt;
     overall_icp.open((config->get_tf_directory() + "overall_icp.txt").c_str(), ios::out);
     overall_ndt.open((config->get_tf_directory() + "overall_ndt.txt").c_str(), ios::out);
-
 
     for(int i=1; i<=pcl_tool.MAX_NUM_SCANS; i++){
         if(pcl_tool.transformations[i-1].is_parent){
@@ -85,7 +84,8 @@ int main(int argc, char **argv) {
             ndt_result << pcl_tool.transformations[i-1].init_guess << std::endl << std::endl;
             continue;
         }
-        if(pcl_tool.transformations[i-1].ok == false){
+
+        if (!pcl_tool.transformations[i-1].ok) {
             std::cout << "Transformation problematic, scan_" << i << " is being skipped" << std::endl;
             continue;
         }
@@ -138,11 +138,10 @@ int main(int argc, char **argv) {
 
         pcl::PointCloud<PointT>::Ptr cloud_targ(new pcl::PointCloud<PointT>);
         pcl::copyPointCloud(*cloud_targ_rgb, *cloud_targ);
-        //pcl::PointCloud<PointT>::Ptr cloud_targ = pcl_tool.loadPCD(target_filename.str());
         end_timer_("Target cloud loaded in:");
 
         if(cloud_targ->points.size() == 0){
-            std::cout << target_filename.str() << " empty" << std::endl;
+            std::cout << target_filename << " empty" << std::endl;
             cloud_in.reset();
             cloud_targ.reset();
             continue;
@@ -155,6 +154,7 @@ int main(int argc, char **argv) {
             cloud_targ = pcl_tool.getSlice(cloud_targ, -50, 50, "y");
         }
 
+        // transform by initial guess
         pcl::PointCloud<PointT>::Ptr cloud_in_transformed = pcl_tool.transform_pcd(cloud_in, pcl_tool.transformations[i-1].init_guess);
 
         Eigen::Matrix4f ndt_init_guess;
@@ -215,20 +215,10 @@ int main(int argc, char **argv) {
         pcl::transformPointCloud(*cloud_in_rgb, *cloud_in_rgb_transformed, pcl_tool.transformations[i-1].T);
         pcl::io::savePCDFile(output_filename.str(), *cloud_in_rgb_transformed, true);
 
-        /*
-        //save sliced PCD files
-        if(config->get_filter_xy_range()){
-            cloud_in_rgb = pcl_tool.getSliceRGB(cloud_in_rgb, -50, 50, "x");
-            cloud_in_rgb = pcl_tool.getSliceRGB(cloud_in_rgb, -50, 50, "y");
-            stringstream filtered_rgb_filename;
-            filtered_rgb_filename << config->get_output_scan_directory() << "filt_cloud_" << i << "_" << config->get_resolution() << ".pcd";
-            pcl::io::savePCDFileASCII (filtered_rgb_filename.str(), *cloud_in_rgb);
-        }
-        */
-
         // write global frame transforms to file
+        // seems like this relies on the numbers in the transform tree being ascending
         int top_parent = pcl_tool.topMostParent(i);
-        if(top_parent>=1 && top_parent<=pcl_tool.MAX_NUM_SCANS){
+        if(top_parent >= 1 && top_parent <= pcl_tool.MAX_NUM_SCANS){
             overall_icp << "scan_" << i << " to scan_" << top_parent << std::endl;
             overall_icp << pcl_tool.transformations[i-1].T << std::endl << std::endl;
 

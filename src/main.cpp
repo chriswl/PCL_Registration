@@ -20,6 +20,11 @@
 
 #include "pcl_tools.h"
 
+// params and cl interface
+#include <boost/program_options.hpp>
+#include "allparams.h"
+#include "cl_options.h"
+
 using namespace std;
 struct timespec t1, t2;
 double elapsed_time;
@@ -51,25 +56,11 @@ void print_pcd_xyz(pcl::PointCloud<PointT>::Ptr cloud){
 }
 
 
-// This function displays the help
-void
-showHelp(char * program_name)
-{
-    std::cout << std::endl;
-    std::cout << "Usage: " << program_name << " cloud_filename.[pcd|ply]" << std::endl;
-    std::cout << "-h:  Show this help." << std::endl;
-}
+int main(int argc, char **argv) {
+    po::variables_map vm;
+    read_config(argc, argv, vm);
+    params *myparams = new params(vm);
 
-void create_launch_file(int min_index, int max_index){
-    //Create launch file for icp_result
-    for(int i=min_index; i<=max_index; i++){
-        std::cout << "<node pkg=\"pcl_ros\" type=\"pcd_to_pointcloud\" name=\"cloud_" << i << "\" args=\"/home/mustafasezer/dataset/Downsampled_Projected_3.5_4.5/scan_" << i << ".pcd 0.1\" output=\"screen\">\n\t<param name=\"frame_id\" value=\"iser_transform_1\" />\n\t<remap from=\"cloud_pcd\" to=\"cloud_" << i << "\" />\n</node>\n\n";
-    }
-}
-
-
-int main()
-{
     pcl_tools pcl_tool;
 
     pcl_tool.getInitialGuesses("/home/mustafasezer/Initial Guesses.txt");

@@ -10,13 +10,13 @@ class params {
 
         std::string get_tf_directory();
         std::string get_original_pointcloud_directory();
-        std::string get_quaterion_directory();
+        std::string get_quaternion_directory();
         std::string get_output_scan_directory();
 
     private:
         std::string tf_directory_;
         std::string original_pointcloud_directory_;
-        std::string quaterion_directory_;
+        std::string quaternion_directory_;
         std::string output_scan_directory_;
 };
 

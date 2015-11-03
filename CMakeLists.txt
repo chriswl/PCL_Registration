@@ -28,7 +28,9 @@ add_definitions(${PCL_DEFINITIONS})
 add_executable (pcl_icp src/main.cpp
     src/pcl_tools.cpp
     src/allparams.cpp
+    src/reg_visualizer.cpp
     src/cl_options.cpp)
+
 target_link_libraries (pcl_icp ${PCL_LIBRARIES}
     boost_program_options
     )

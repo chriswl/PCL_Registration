@@ -42,8 +42,6 @@ public:
     int apply_icp(std::string path_in, std::string path_out);
     pcl::PointCloud<PointT>::Ptr loadPCD(std::string path);
     pcl::PointCloud<PointT>::Ptr transform_pcd(pcl::PointCloud<PointT>::Ptr source_cloud, Eigen::Matrix4f transform_matrix);
-    void viewPCD(pcl::PointCloud<PointT>::Ptr cloud, std::string name="point_cloud", int r=255, int g=255, int b=255);
-    void viewICPResult(pcl::PointCloud<PointT>::Ptr cloud_in, pcl::PointCloud<PointT>::Ptr cloud_targ, pcl::PointCloud<PointT>::Ptr cloud_aligned);
     pcl::PointCloud<PointT>::Ptr getSlice(pcl::PointCloud<PointT>::Ptr cloud, float z1, float z2, std::string field_name = "z");
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr getSliceRGB(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, float z1, float z2, std::string field_name = "z");
     void savePCD(pcl::PointCloud<PointT>::Ptr cloud, std::string path);
@@ -58,7 +56,6 @@ public:
     int computeGlobalTransformations();
     int topMostParent(int id);
 
-    void rgbVis (pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud);
 
     struct transformation_relation transformations[83];
     Eigen::Matrix4f transformations_icp[83], transformations_ndt[83];

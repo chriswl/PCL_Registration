@@ -90,8 +90,9 @@ public:
     }
 };
 
-pcl_tools::pcl_tools()
+pcl_tools::pcl_tools(params *config)
 {
+    config_ = config;
     MAX_NUM_SCANS = 83;
     /*transformations[0].parent_id = -5;
     transformations[0].T.setIdentity();
@@ -128,7 +129,7 @@ Eigen::Matrix4f pcl_tools::createTransformationMatrix(Eigen::Matrix3f rotation, 
 Eigen::Matrix4f pcl_tools::getInitialGuess(int input, int target){
     string tline;
     fstream fid;
-    fid.open("/home/mustafasezer/Initial Guesses.txt", ios::in);
+    fid.open((config_->get_tf_directory() + "Initial Guesses.txt").c_str(), ios::in);
     getline(fid, tline);
     stringstream transform_pair;
     transform_pair << "scan_" << input << " to " << "scan_" << target;
@@ -252,7 +253,7 @@ int pcl_tools::getInitialGuesses(string filename){
 Eigen::Matrix4f pcl_tools::getTransformation(int input, int target){
     string tline;
     fstream fid;
-    fid.open("/home/mustafasezer/icp_result.txt", ios::in);
+    fid.open((config_->get_tf_directory() + "icp_result.txt").c_str(), ios::in);
     getline(fid, tline);
     stringstream transform_pair;
     transform_pair << "scan_" << input << " to " << "scan_" << target;
@@ -302,8 +303,8 @@ int pcl_tools::getTransformations(string filename, Eigen::Matrix4f transformatio
 
 int pcl_tools::computeGlobalTransformations(){
     fstream overall_icp, overall_ndt;
-    overall_icp.open("/home/mustafasezer/overall_icp.txt", ios::out);
-    overall_ndt.open("/home/mustafasezer/overall_ndt.txt", ios::out);
+    overall_icp.open((config_->get_tf_directory() + "overall_icp.txt").c_str(), ios::out);
+    overall_ndt.open((config_->get_tf_directory() + "overall_ndt.txt").c_str(), ios::out);
 
     for(int i=0; i<MAX_NUM_SCANS; i++){
         if(transformations[i-1].is_parent){

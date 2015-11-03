@@ -129,7 +129,13 @@ Eigen::Matrix4f pcl_tools::createTransformationMatrix(Eigen::Matrix3f rotation, 
 Eigen::Matrix4f pcl_tools::getInitialGuess(int input, int target){
     string tline;
     fstream fid;
-    fid.open((config_->get_tf_directory() + "Initial Guesses.txt").c_str(), ios::in);
+    std::string initial_guess_filename = config_->get_tf_directory() + "initial_guesses.txt";
+    if (!file_exist(initial_guess_filename.c_str())) {
+        std::cout << "Can not find initial guesses; exiting" << std::endl;
+        throw std::invalid_argument( "no initial guess" );
+    }
+
+    fid.open(initial_guess_filename.c_str(), ios::in);
     getline(fid, tline);
     stringstream transform_pair;
     transform_pair << "scan_" << input << " to " << "scan_" << target;
@@ -194,6 +200,11 @@ int pcl_tools::getInitialGuesses(string filename){
     string tline;
     fstream fid;
     int input, target;
+    if (!file_exist(filename.c_str())) {
+        std::cout << "Can not find initial guesses in " << filename << "; exiting" << std::endl;
+        throw std::invalid_argument("no initial guess");
+    }
+
     fid.open(filename.c_str(), ios::in);
     getline(fid, tline);
     while(!fid.eof()){

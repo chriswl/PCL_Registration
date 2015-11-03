@@ -1,1 +1,4 @@
 build/
+.vimrc
+tags
+Session.vim

@@ -4,7 +4,11 @@ set(CMAKE_BUILD_TYPE Debug)
 
 project(pcl_registration)
 
-find_package(PCL 1.2 REQUIRED)
+include_directories(include
+    ${catkin_INCLUDE_DIRS})
+link_directories(${catkin_LIBRARIES})
+
+find_package(PCL 1.7 REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
@@ -14,15 +18,21 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 catkin_package(
-#  INCLUDE_DIRS include
+    INCLUDE_DIRS include
 )
 
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
-add_executable (pcl_icp src/main.cpp src/pcl_tools.cpp)
-target_link_libraries (pcl_icp ${PCL_LIBRARIES})
+add_executable (pcl_icp src/main.cpp
+    src/pcl_tools.cpp
+    src/allparams.cpp
+    src/cl_options.cpp)
+target_link_libraries (pcl_icp ${PCL_LIBRARIES}
+    boost_program_options
+    )
+
 
 add_executable (downsampler src/downsampler.cpp src/pcl_tools.cpp)
 target_link_libraries (downsampler ${PCL_LIBRARIES})

@@ -39,10 +39,7 @@ int read_config(int ac, char* av[], po::variables_map &vm) {
         po::options_description cmdline_options;
         cmdline_options.add(generic);
 
-        po::positional_options_description p;
-        p.add("scan_no", -1);
-
-        store(po::command_line_parser(ac, av).options(cmdline_options).positional(p).run(), vm);
+        store(po::command_line_parser(ac, av).options(cmdline_options).run(), vm);
         notify(vm);
 
         po::options_description config_file_options;

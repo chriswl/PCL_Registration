@@ -157,21 +157,28 @@ int main(int argc, char **argv) {
 
         pcl::PointCloud<PointT>::Ptr cloud_in_transformed = pcl_tool.transform_pcd(cloud_in, pcl_tool.transformations[i-1].init_guess);
 
-        Eigen::Matrix4f init_guess;
-        init_guess.setIdentity();
+        Eigen::Matrix4f ndt_init_guess;
+        ndt_init_guess.setIdentity();
 
         //Whole data
-        //Eigen::Matrix4f transform_matrix_ndt = pcl_tool.apply_ndt(cloud_in_transformed, cloud_targ, init_guess);
+        //Eigen::Matrix4f transform_matrix_ndt = pcl_tool.apply_ndt(cloud_in_transformed, cloud_targ, ndt_init_guess);
         //Eigen::Matrix4f transform_matrix_icp = pcl_tool.apply_icp(cloud_in_transformed, cloud_targ, true);
 
         // Only specific z range
         pcl::PointCloud<PointT>::Ptr cloud_in_transformed_filtered = pcl_tool.getSlice(cloud_in_transformed, 2.5, 20);
         pcl::PointCloud<PointT>::Ptr cloud_targ_filtered = pcl_tool.getSlice(cloud_targ, 2.5, 20);
 
-        std::cout << "Applying NDT" << std::endl;
-        start_timer_();
-        Eigen::Matrix4f transform_matrix_ndt = pcl_tool.apply_ndt(cloud_in_transformed_filtered, cloud_targ_filtered, init_guess);
-        end_timer_("NDT completed in:");
+        Eigen::Matrix4f transform_matrix_ndt;
+        if (config->do_ndt()) {
+            std::cout << "Applying NDT" << std::endl;
+            start_timer_();
+            transform_matrix_ndt = pcl_tool.apply_ndt(cloud_in_transformed_filtered, cloud_targ_filtered, ndt_init_guess);
+            end_timer_("NDT completed in:");
+
+            ndt_result << "scan_" << i << " to scan_" << pcl_tool.transformations[i-1].parent_id << std::endl;
+            ndt_result << transform_matrix_ndt << std::endl << std::endl;
+        }
+
 
         std::cout << "ICP-Aligning scan_" << i << " to scan_" << pcl_tool.transformations[i-1].parent_id << std::endl;
         start_timer_();
@@ -183,29 +190,19 @@ int main(int argc, char **argv) {
         icp_result << "scan_" << i << " to scan_" << pcl_tool.transformations[i-1].parent_id << std::endl;
         icp_result << transform_matrix_icp << std::endl << std::endl;
 
-        ndt_result << "scan_" << i << " to scan_" << pcl_tool.transformations[i-1].parent_id << std::endl;
-        ndt_result << transform_matrix_ndt << std::endl << std::endl;
-
-        /*pcl_tools::transformation_relation current_transform;
-        current_transform = pcl_tool.transformations[i-1];
-        while(current_transform.is_parent==false){
-            if(pcl_tool.transformations[current_transform.parent_id-1].completed==false){
-                std::cerr << "Parent transformation is not completed for scan_" << i << std::endl;
-                break;
-            }
-            pcl_tool.transformations[i-1].T = pcl_tool.transformations[i-1].T * pcl_tool.transformations[current_transform.parent_id-1].T;
-            current_transform = pcl_tool.transformations[current_transform.parent_id-1];
-        }*/
-        if(pcl_tool.transformations[pcl_tool.transformations[i-1].parent_id-1].completed==false){
+        if (!pcl_tool.transformations[pcl_tool.transformations[i-1].parent_id-1].completed){
             std::cerr << "Parent transformation is not completed for scan_" << i << std::endl;
             cloud_in.reset();
             cloud_targ.reset();
             cloud_in_transformed.reset();
             continue;
         }
+
         // apply transformation
+        if (config->do_ndt()) {
+            pcl_tool.transformations[i-1].T_ndt = pcl_tool.transformations[pcl_tool.transformations[i-1].parent_id-1].T_ndt * transform_matrix_ndt * pcl_tool.transformations[i-1].init_guess;
+        }
         pcl_tool.transformations[i-1].T = pcl_tool.transformations[pcl_tool.transformations[i-1].parent_id-1].T * transform_matrix_icp * pcl_tool.transformations[i-1].init_guess;
-        pcl_tool.transformations[i-1].T_ndt = pcl_tool.transformations[pcl_tool.transformations[i-1].parent_id-1].T_ndt * transform_matrix_ndt * pcl_tool.transformations[i-1].init_guess;
         pcl_tool.transformations[i-1].completed = true;
 
         // save transformed point cloud

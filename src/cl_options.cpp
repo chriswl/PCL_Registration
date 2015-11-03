@@ -33,6 +33,7 @@ int read_config(int ac, char* av[], po::variables_map &vm) {
             ("quaternion_directory", po::value<string>()->default_value("/home/landsiedel/data/transforms/quaternions/"))
             ("output_scan_directory", po::value<string>()->default_value("/home/landsiedel/data/scans/transformed_scans/"))
             ("resolution", po::value<float>()->default_value(0.1))
+            ("do_ndt", po::value<bool>()->default_value(true))
             ("filter_xy_range", po::value<bool>()->default_value(false));
 
         po::options_description cmdline_options;

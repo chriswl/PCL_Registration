@@ -14,6 +14,7 @@ class params {
         std::string get_output_scan_directory();
         float get_resolution();
         bool get_filter_xy_range();
+        bool do_ndt();
         std::string get_scan_filename(int scan_ix);
 
     private:
@@ -23,6 +24,7 @@ class params {
         std::string output_scan_directory_;
         float resolution_;
         bool filter_xy_range_;
+        bool do_ndt_;
 };
 
 #endif

@@ -15,6 +15,7 @@ params::params(po::variables_map vm) {
     output_scan_directory_ = vm["output_scan_directory"].as<string>();
     resolution_ = vm["resolution"].as<float>();
     filter_xy_range_ = vm["filter_xy_range"].as<bool>();
+    do_ndt_ = vm["do_ndt"].as<bool>();
 }
 
 std::string params::get_tf_directory() { return tf_directory_;};
@@ -23,7 +24,7 @@ std::string params::get_quaternion_directory() { return quaternion_directory_;};
 std::string params::get_output_scan_directory() { return output_scan_directory_;};
 float params::get_resolution() { return resolution_; };
 bool params::get_filter_xy_range() { return filter_xy_range_; };
-
+bool params::do_ndt() { return do_ndt_; }; 
 std::string params::get_scan_filename(int scan_ix) {
     std::stringstream ss;
     ss << original_pointcloud_directory_ << "cuboids_irgblabel_" << std::setw(2) << std::setfill('0') << scan_ix << "." << resolution_ << ".pcd";

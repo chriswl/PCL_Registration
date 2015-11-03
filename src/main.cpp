@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
     read_config(argc, argv, vm);
     params *config = new params(vm);
 
-    pcl_tools pcl_tool;
+    pcl_tools pcl_tool(config);
 
     pcl_tool.getInitialGuesses(config->get_tf_directory() + "Initial Guesses.txt");
 

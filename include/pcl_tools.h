@@ -37,7 +37,7 @@ public:
         //struct transformation_relation* parent;
     };
     Eigen::Matrix4f apply_icp(pcl::PointCloud<PointT>::Ptr cloud_in, pcl::PointCloud<PointT>::Ptr cloud_out, bool viewResult=true);
-    Eigen::Matrix4f pairAlign (const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, bool downsample = false);
+    Eigen::Matrix4f pairAlign (const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt);
     Eigen::Matrix4f apply_ndt(pcl::PointCloud<PointT>::Ptr cloud_in, pcl::PointCloud<PointT>::Ptr target_cloud, Eigen::Matrix4f init_guess);
     int apply_icp(std::string path_in, std::string path_out);
     pcl::PointCloud<PointT>::Ptr loadPCD(std::string path);

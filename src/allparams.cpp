@@ -13,6 +13,7 @@ params::params(po::variables_map vm) {
     quaternion_directory_ = vm["quaternion_directory"].as<string>();
     output_scan_directory_ = vm["output_scan_directory"].as<string>();
     resolution_ = vm["resolution"].as<float>();
+    filter_xy_range_ = vm["filter_xy_range"].as<bool>();
 }
 
 std::string params::get_tf_directory() { return tf_directory_;};
@@ -20,3 +21,4 @@ std::string params::get_original_pointcloud_directory() { return original_pointc
 std::string params::get_quaternion_directory() { return quaternion_directory_;};
 std::string params::get_output_scan_directory() { return output_scan_directory_;};
 float params::get_resolution() { return resolution_; };
+bool params::get_filter_xy_range() { return filter_xy_range_; };

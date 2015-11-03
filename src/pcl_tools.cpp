@@ -381,29 +381,12 @@ Eigen::Matrix4f pcl_tools::apply_icp(pcl::PointCloud<PointT>::Ptr cloud_in, pcl:
     return transformation;
 }
 
-Eigen::Matrix4f pcl_tools::pairAlign (const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, bool downsample)
+Eigen::Matrix4f pcl_tools::pairAlign (const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt)
 {
     //
     // Downsample for consistency and speed
     // \note enable this for large datasets
-    PointCloud::Ptr src (new PointCloud);
-    PointCloud::Ptr tgt (new PointCloud);
     pcl::VoxelGrid<PointT> grid;
-    if (downsample)
-    {
-        grid.setLeafSize (0.2, 0.2, 0.2);
-        grid.setInputCloud (cloud_src);
-        grid.filter (*src);
-
-        grid.setInputCloud (cloud_tgt);
-        grid.filter (*tgt);
-    }
-    else
-    {
-        src = cloud_src;
-        tgt = cloud_tgt;
-    }
-
 
     // Compute surface normals and curvature
     PointCloudWithNormals::Ptr points_with_normals_src (new PointCloudWithNormals);
@@ -414,13 +397,13 @@ Eigen::Matrix4f pcl_tools::pairAlign (const PointCloud::Ptr cloud_src, const Poi
     norm_est.setSearchMethod (tree);
     norm_est.setKSearch (30);
 
-    norm_est.setInputCloud (src);
+    norm_est.setInputCloud(cloud_src);
     norm_est.compute (*points_with_normals_src);
-    pcl::copyPointCloud (*src, *points_with_normals_src);
+    pcl::copyPointCloud (*cloud_src, *points_with_normals_src);
 
-    norm_est.setInputCloud (tgt);
+    norm_est.setInputCloud (cloud_tgt);
     norm_est.compute (*points_with_normals_tgt);
-    pcl::copyPointCloud (*tgt, *points_with_normals_tgt);
+    pcl::copyPointCloud (*cloud_tgt, *points_with_normals_tgt);
 
     //
     // Instantiate our custom point representation (defined above) ...
@@ -443,9 +426,6 @@ Eigen::Matrix4f pcl_tools::pairAlign (const PointCloud::Ptr cloud_src, const Poi
     reg.setInputSource (points_with_normals_src);
     reg.setInputTarget (points_with_normals_tgt);
 
-
-
-    //
     // Run the same optimization in a loop and visualize the results
     Eigen::Matrix4f Ti = Eigen::Matrix4f::Identity (), prev, targetToSource;
     PointCloudWithNormals::Ptr reg_result = points_with_normals_src;
@@ -475,40 +455,8 @@ Eigen::Matrix4f pcl_tools::pairAlign (const PointCloud::Ptr cloud_src, const Poi
         }
 
         prev = reg.getLastIncrementalTransformation ();
-
-        // visualize current state
-        //showCloudsRight(points_with_normals_tgt, points_with_normals_src);
     }
     return Ti;
-
-    //std::cout << Ti << std::endl;
-
-    //
-    // Get the transformation from target to source
-    //targetToSource = Ti.inverse();
-
-    //
-    // Transform target back in source frame
-    //pcl::transformPointCloud (*cloud_tgt, *output, targetToSource);
-
-    /*p->removePointCloud ("source");
-  p->removePointCloud ("target");
-
-  PointCloudColorHandlerCustom<PointT> cloud_tgt_h (output, 0, 255, 0);
-  PointCloudColorHandlerCustom<PointT> cloud_src_h (cloud_src, 255, 0, 0);
-  p->addPointCloud (output, cloud_tgt_h, "target", vp_2);
-  p->addPointCloud (cloud_src, cloud_src_h, "source", vp_2);
-
-    PCL_INFO ("Press q to continue the registration.\n");
-  p->spin ();
-
-  p->removePointCloud ("source");
-  p->removePointCloud ("target");
-
-  //add the source to the transformed target
-  *output += *cloud_src;
-
-  final_transform = targetToSource;*/
 }
 
 int pcl_tools::apply_icp(string path_in, string path_out){

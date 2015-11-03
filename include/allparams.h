@@ -13,6 +13,7 @@ class params {
         std::string get_quaternion_directory();
         std::string get_output_scan_directory();
         float get_resolution();
+        bool get_filter_xy_range();
 
     private:
         std::string tf_directory_;
@@ -20,6 +21,7 @@ class params {
         std::string quaternion_directory_;
         std::string output_scan_directory_;
         float resolution_;
+        bool filter_xy_range_;
 };
 
 #endif

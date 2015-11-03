@@ -150,8 +150,7 @@ int main(int argc, char **argv) {
             continue;
         }
 
-        bool filter_xy_range =false;
-        if(filter_xy_range){
+        if(config->get_filter_xy_range()){
             cloud_in = pcl_tool.getSlice(cloud_in, -50, 50, "x");
             cloud_in = pcl_tool.getSlice(cloud_in, -50, 50, "y");
             cloud_targ = pcl_tool.getSlice(cloud_targ, -50, 50, "x");
@@ -179,7 +178,7 @@ int main(int argc, char **argv) {
         std::cout << "Aligning scan_" << i << " to scan_" << pcl_tool.transformations[i-1].parent_id << std::endl;
         start_timer_();
         //Eigen::Matrix4f transform_matrix_icp = pcl_tool.apply_icp(cloud_in_transformed_filtered, cloud_targ_filtered, false);
-        Eigen::Matrix4f transform_matrix_icp = pcl_tool.pairAlign(cloud_in_transformed_filtered, cloud_targ_filtered, false);
+        Eigen::Matrix4f transform_matrix_icp = pcl_tool.pairAlign(cloud_in_transformed_filtered, cloud_targ_filtered);
         end_timer_("Pair aligned in:");
 
         icp_result << "scan_" << i << " to scan_" << pcl_tool.transformations[i-1].parent_id << std::endl;
@@ -221,7 +220,7 @@ int main(int argc, char **argv) {
         pcl::io::savePCDFileASCII (output_filename.str(), *cloud_in_rgb_transformed);
 
 
-        if(filter_xy_range){
+        if(config->get_filter_xy_range()){
             cloud_in_rgb = pcl_tool.getSliceRGB(cloud_in_rgb, -50, 50, "x");
             cloud_in_rgb = pcl_tool.getSliceRGB(cloud_in_rgb, -50, 50, "y");
             stringstream filtered_rgb_filename;

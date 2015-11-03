@@ -14,6 +14,7 @@ class params {
         std::string get_output_scan_directory();
         float get_resolution();
         bool get_filter_xy_range();
+        std::string get_scan_filename(int scan_ix);
 
     private:
         std::string tf_directory_;

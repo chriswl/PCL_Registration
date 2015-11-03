@@ -89,56 +89,53 @@ int main(int argc, char **argv) {
             std::cout << "Transformation problematic, scan_" << i << " is being skipped" << std::endl;
             continue;
         }
-        if(pcl_tool.transformations[i-1].parent_id>83 || pcl_tool.transformations[i-1].parent_id<1){
+
+        if(pcl_tool.transformations[i-1].parent_id>83 || pcl_tool.transformations[i-1].parent_id<1) {
             std::cout << "Parent id problematic, scan_" << i << " is being skipped" << std::endl;
-            continue;
-        }
-        stringstream target_filename, input_filename;
-        input_filename << config->get_original_pointcloud_directory() << "cuboids_irgblabel_" << i << "." << config->get_resolution() << ".pcd";
-        target_filename << config->get_original_pointcloud_directory() << "cuboids_irgblabel_" <<
-            pcl_tool.transformations[i-1].parent_id << "." << config->get_resolution() << ".pcd";
-        string strtarget_filename = target_filename.str();
-        string strinput_filename = input_filename.str();
-        if (!file_exists (strtarget_filename.c_str()))
-        {
-            std::cerr << target_filename.str() << " does not exist" << std::endl;
-            continue;
-        }
-        else if (!file_exists (strinput_filename.c_str()))
-        {
-            std::cerr << input_filename.str() << " does not exist" << std::endl;
             continue;
         }
 
         //Read input cloud
-        std::cout << "Reading input cloud " << input_filename.str() << std::endl;
+        std::string input_filename = config->get_scan_filename(i);
+        if (!file_exists(input_filename.c_str())) {
+            std::cerr << input_filename << " does not exist" << std::endl;
+            continue;
+        }
+
+        std::cout << "Reading input cloud " << input_filename << std::endl;
         start_timer_();
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_in_rgb(new pcl::PointCloud<pcl::PointXYZRGB>);
-        if (pcl::io::loadPCDFile<pcl::PointXYZRGB> (input_filename.str(), *cloud_in_rgb) == -1) //* load the file
-        {
-            string temp(input_filename.str());
+        if (pcl::io::loadPCDFile<pcl::PointXYZRGB> (input_filename, *cloud_in_rgb) == -1) {
+            string temp(input_filename);
             PCL_ERROR ("Couldn't read %s\n", temp.c_str());
             continue;
         }
+
         pcl::PointCloud<PointT>::Ptr cloud_in(new pcl::PointCloud<PointT>);
         pcl::copyPointCloud(*cloud_in_rgb, *cloud_in);
-        //pcl::PointCloud<PointT>::Ptr cloud_in = pcl_tool.loadPCD(input_filename.str());
         end_timer_("Input cloud loaded in:");
         if(cloud_in->points.size() == 0){
-            std::cout << input_filename.str() << " empty" << std::endl;
+            std::cout << input_filename << " empty" << std::endl;
             continue;
         }
 
         //Read target cloud
-        std::cout << "Reading target cloud " << target_filename.str() << std::endl;
+        std::string target_filename = config->get_scan_filename(pcl_tool.transformations[i-1].parent_id);
+
+        if (!file_exists(target_filename.c_str())) {
+            std::cerr << target_filename << " does not exist" << std::endl;
+            continue;
+        }
+
+        std::cout << "Reading target cloud " << target_filename << std::endl;
         start_timer_();
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_targ_rgb(new pcl::PointCloud<pcl::PointXYZRGB>);
-        if (pcl::io::loadPCDFile<pcl::PointXYZRGB> (target_filename.str(), *cloud_targ_rgb) == -1) //* load the file
-        {
-            string temp(target_filename.str());
+        if (pcl::io::loadPCDFile<pcl::PointXYZRGB> (target_filename, *cloud_targ_rgb) == -1) {
+            string temp(target_filename);
             PCL_ERROR ("Couldn't read %s\n", temp.c_str());
             continue;
         }
+
         pcl::PointCloud<PointT>::Ptr cloud_targ(new pcl::PointCloud<PointT>);
         pcl::copyPointCloud(*cloud_targ_rgb, *cloud_targ);
         //pcl::PointCloud<PointT>::Ptr cloud_targ = pcl_tool.loadPCD(target_filename.str());

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <boost/program_options.hpp>
 
@@ -22,3 +23,9 @@ std::string params::get_quaternion_directory() { return quaternion_directory_;};
 std::string params::get_output_scan_directory() { return output_scan_directory_;};
 float params::get_resolution() { return resolution_; };
 bool params::get_filter_xy_range() { return filter_xy_range_; };
+
+std::string params::get_scan_filename(int scan_ix) {
+    std::stringstream ss;
+    ss << original_pointcloud_directory_ << "cuboids_irgblabel_" << std::setw(2) << std::setfill('0') << scan_ix << "." << resolution_ << ".pcd";
+    return ss.str();
+}

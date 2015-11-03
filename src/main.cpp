@@ -59,24 +59,19 @@ void print_pcd_xyz(pcl::PointCloud<PointT>::Ptr cloud){
 int main(int argc, char **argv) {
     po::variables_map vm;
     read_config(argc, argv, vm);
-    params *myparams = new params(vm);
+    params *config = new params(vm);
 
     pcl_tools pcl_tool;
 
-    pcl_tool.getInitialGuesses("/home/mustafasezer/Initial Guesses.txt");
-
-    /*pcl_tool.getTransformations("/home/mustafasezer/icp_results.txt", pcl_tool.transformations_icp);
-    pcl_tool.getTransformations("/home/mustafasezer/ndt_results.txt", pcl_tool.transformations_ndt);
-
-    pcl_tool.computeGlobalTransformations();*/
+    pcl_tool.getInitialGuesses(config->get_tf_directory() + "Initial Guesses.txt");
 
     fstream icp_result, ndt_result;
-    icp_result.open("/home/mustafasezer/icp_results.txt", ios::out);
-    ndt_result.open("/home/mustafasezer/ndt_results.txt", ios::out);
+    icp_result.open((config->get_tf_directory() + "icp_results.txt").c_str(), ios::out);
+    ndt_result.open((config->get_tf_directory() + "ndt_results.txt").c_str(), ios::out);
 
     fstream overall_icp, overall_ndt;
-    overall_icp.open("/home/mustafasezer/overall_icp.txt", ios::out);
-    overall_ndt.open("/home/mustafasezer/overall_ndt.txt", ios::out);
+    overall_icp.open((config->get_tf_directory() + "overall_icp.txt").c_str(), ios::out);
+    overall_ndt.open((config->get_tf_directory() + "overall_ndt.txt").c_str(), ios::out);
 
 
     for(int i=1; i<=pcl_tool.MAX_NUM_SCANS; i++){
@@ -99,10 +94,8 @@ int main(int argc, char **argv) {
             continue;
         }
         stringstream target_filename, input_filename;
-        target_filename.clear();
-        input_filename.clear();
-        input_filename << "/home/mustafasezer/Desktop/downsampled_scaled_rgbclouds/cloud_" << i << "_0.1.pcd";
-        target_filename << "/home/mustafasezer/Desktop/downsampled_scaled_rgbclouds/cloud_" << pcl_tool.transformations[i-1].parent_id << "_0.1.pcd";
+        input_filename << config->get_original_pointcloud_directory() << "cloud_" << i << "_0.1.pcd";
+        target_filename << config->get_original_pointcloud_directory() << "cloud_" << pcl_tool.transformations[i-1].parent_id << "_0.1.pcd";
         string strtarget_filename = target_filename.str();
         string strinput_filename = input_filename.str();
         if (!file_exists (strtarget_filename.c_str()))
@@ -196,7 +189,7 @@ int main(int argc, char **argv) {
         ndt_result << transform_matrix_ndt << std::endl << std::endl;
 
         stringstream output_filename;
-        output_filename << "/home/mustafasezer/dataset/ICP_Results_rgb/scan_" << i << "_0.1.pcd";
+        output_filename << config->get_output_scan_directory() << "scan_" << i << "_0.1.pcd";
 
         /*pcl_tools::transformation_relation current_transform;
         current_transform = pcl_tool.transformations[i-1];
@@ -232,7 +225,7 @@ int main(int argc, char **argv) {
             cloud_in_rgb = pcl_tool.getSliceRGB(cloud_in_rgb, -50, 50, "x");
             cloud_in_rgb = pcl_tool.getSliceRGB(cloud_in_rgb, -50, 50, "y");
             stringstream filtered_rgb_filename;
-            filtered_rgb_filename << "/home/mustafasezer/dataset/downsampled_scaled_rgbclouds_filtered/cloud_" << i << "_0.1.pcd";
+            filtered_rgb_filename << config->get_output_scan_directory() << "filt_cloud_" << i << "_0.1.pcd";
             pcl::io::savePCDFileASCII (filtered_rgb_filename.str(), *cloud_in_rgb);
         }
 

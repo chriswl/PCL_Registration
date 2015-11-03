@@ -12,12 +12,14 @@ class params {
         std::string get_original_pointcloud_directory();
         std::string get_quaternion_directory();
         std::string get_output_scan_directory();
+        float get_resolution();
 
     private:
         std::string tf_directory_;
         std::string original_pointcloud_directory_;
         std::string quaternion_directory_;
         std::string output_scan_directory_;
+        float resolution_;
 };
 
 #endif

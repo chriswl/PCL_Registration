@@ -33,7 +33,3 @@ target_link_libraries (pcl_icp ${PCL_LIBRARIES}
     boost_program_options
     )
 
-
-add_executable (downsampler src/downsampler.cpp src/pcl_tools.cpp)
-target_link_libraries (downsampler ${PCL_LIBRARIES})
-

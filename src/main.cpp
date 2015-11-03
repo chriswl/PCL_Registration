@@ -94,9 +94,9 @@ int main(int argc, char **argv) {
             continue;
         }
         stringstream target_filename, input_filename;
-        input_filename << config->get_original_pointcloud_directory() << "cloud_" << i << "_" << config->get_resolution() << ".pcd";
-        target_filename << config->get_original_pointcloud_directory() << "cloud_" <<
-            pcl_tool.transformations[i-1].parent_id << "_" << config->get_resolution() << ".pcd";
+        input_filename << config->get_original_pointcloud_directory() << "cuboids_irgblabel_" << i << "." << config->get_resolution() << ".pcd";
+        target_filename << config->get_original_pointcloud_directory() << "cuboids_irgblabel_" <<
+            pcl_tool.transformations[i-1].parent_id << "." << config->get_resolution() << ".pcd";
         string strtarget_filename = target_filename.str();
         string strinput_filename = input_filename.str();
         if (!file_exists (strtarget_filename.c_str()))
@@ -167,7 +167,7 @@ int main(int argc, char **argv) {
         //Eigen::Matrix4f transform_matrix_ndt = pcl_tool.apply_ndt(cloud_in_transformed, cloud_targ, init_guess);
         //Eigen::Matrix4f transform_matrix_icp = pcl_tool.apply_icp(cloud_in_transformed, cloud_targ, true);
 
-        //Only specific z range
+        // Only specific z range
         pcl::PointCloud<PointT>::Ptr cloud_in_transformed_filtered = pcl_tool.getSlice(cloud_in_transformed, 2.5, 20);
         pcl::PointCloud<PointT>::Ptr cloud_targ_filtered = pcl_tool.getSlice(cloud_targ, 2.5, 20);
 
@@ -176,20 +176,18 @@ int main(int argc, char **argv) {
         Eigen::Matrix4f transform_matrix_ndt = pcl_tool.apply_ndt(cloud_in_transformed_filtered, cloud_targ_filtered, init_guess);
         end_timer_("NDT completed in:");
 
-        std::cout << "Aligning scan_" << i << " to scan_" << pcl_tool.transformations[i-1].parent_id << std::endl;
+        std::cout << "ICP-Aligning scan_" << i << " to scan_" << pcl_tool.transformations[i-1].parent_id << std::endl;
         start_timer_();
         //Eigen::Matrix4f transform_matrix_icp = pcl_tool.apply_icp(cloud_in_transformed_filtered, cloud_targ_filtered, false);
         Eigen::Matrix4f transform_matrix_icp = pcl_tool.pairAlign(cloud_in_transformed_filtered, cloud_targ_filtered);
         end_timer_("Pair aligned in:");
 
+        // write pairwise transforms to file
         icp_result << "scan_" << i << " to scan_" << pcl_tool.transformations[i-1].parent_id << std::endl;
         icp_result << transform_matrix_icp << std::endl << std::endl;
 
         ndt_result << "scan_" << i << " to scan_" << pcl_tool.transformations[i-1].parent_id << std::endl;
         ndt_result << transform_matrix_ndt << std::endl << std::endl;
-
-        stringstream output_filename;
-        output_filename << config->get_output_scan_directory() << "scan_" << i << "_" << config->get_resolution() << ".pcd";
 
         /*pcl_tools::transformation_relation current_transform;
         current_transform = pcl_tool.transformations[i-1];
@@ -208,19 +206,23 @@ int main(int argc, char **argv) {
             cloud_in_transformed.reset();
             continue;
         }
+        // apply transformation
         pcl_tool.transformations[i-1].T = pcl_tool.transformations[pcl_tool.transformations[i-1].parent_id-1].T * transform_matrix_icp * pcl_tool.transformations[i-1].init_guess;
         pcl_tool.transformations[i-1].T_ndt = pcl_tool.transformations[pcl_tool.transformations[i-1].parent_id-1].T_ndt * transform_matrix_ndt * pcl_tool.transformations[i-1].init_guess;
         pcl_tool.transformations[i-1].completed = true;
 
-        //pcl_tool.transformations[i-1].T = pcl_tool.transformations[i-1].T * transform_matrix_icp * pcl_tool.transformations[i-1].init_guess;
+        // save transformed point cloud
+        stringstream output_filename;
+        output_filename << config->get_output_scan_directory() << "scan_" << i << "_" << config->get_resolution() << ".pcd";
 
         //RGB Version
         //pcl_tool.savePCD((pcl_tool.transform_pcd(cloud_in, pcl_tool.transformations[i-1].T)), output_filename.str());
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_in_rgb_transformed(new pcl::PointCloud<pcl::PointXYZRGB>);
         pcl::transformPointCloud(*cloud_in_rgb, *cloud_in_rgb_transformed, pcl_tool.transformations[i-1].T);
-        pcl::io::savePCDFileASCII (output_filename.str(), *cloud_in_rgb_transformed);
+        pcl::io::savePCDFile(output_filename.str(), *cloud_in_rgb_transformed, true);
 
-
+        /*
+        //save sliced PCD files
         if(config->get_filter_xy_range()){
             cloud_in_rgb = pcl_tool.getSliceRGB(cloud_in_rgb, -50, 50, "x");
             cloud_in_rgb = pcl_tool.getSliceRGB(cloud_in_rgb, -50, 50, "y");
@@ -228,8 +230,9 @@ int main(int argc, char **argv) {
             filtered_rgb_filename << config->get_output_scan_directory() << "filt_cloud_" << i << "_" << config->get_resolution() << ".pcd";
             pcl::io::savePCDFileASCII (filtered_rgb_filename.str(), *cloud_in_rgb);
         }
+        */
 
-
+        // write global frame transforms to file
         int top_parent = pcl_tool.topMostParent(i);
         if(top_parent>=1 && top_parent<=pcl_tool.MAX_NUM_SCANS){
             overall_icp << "scan_" << i << " to scan_" << top_parent << std::endl;
@@ -245,6 +248,7 @@ int main(int argc, char **argv) {
         cloud_in_rgb.reset();
         cloud_targ_rgb.reset();
     }
+
     icp_result.close();
     ndt_result.close();
     overall_icp.close();

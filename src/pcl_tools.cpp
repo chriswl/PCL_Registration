@@ -658,7 +658,7 @@ void pcl_tools::viewICPResult(pcl::PointCloud<PointT>::Ptr cloud_in, pcl::PointC
 Eigen::Matrix4f pcl_tools::apply_icp(pcl::PointCloud<PointT>::Ptr cloud_in, pcl::PointCloud<PointT>::Ptr cloud_out, bool viewResult){
     start_timer();
     pcl::IterativeClosestPoint<PointT, PointT> icp;
-    icp.setInputCloud(cloud_in);
+    icp.setInputSource(cloud_in);
     icp.setInputTarget(cloud_out);
 
     icp.setMaxCorrespondenceDistance (1.5);
@@ -844,7 +844,7 @@ int pcl_tools::apply_icp(string path_in, string path_out){
 
     start_timer();
     pcl::IterativeClosestPoint<PointT, PointT> icp;
-    icp.setInputCloud(cloud_in);
+    icp.setInputSource(cloud_in);
     icp.setInputTarget(cloud_out);
     pcl::PointCloud<PointT> Final;
     icp.align(Final);

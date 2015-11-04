@@ -39,7 +39,6 @@ using namespace std;
 
 struct timespec t1_, t2_;
 double elapsed_time_;
-volatile long long i_;
 
 void start_timer(){
     clock_gettime(CLOCK_MONOTONIC,  &t1_);

@@ -205,7 +205,7 @@ int main(int argc, char **argv) {
         }
 
         Eigen::Matrix4f transform_matrix_icp;
-        if (config->do_gicp()) {
+        if (config->do_icp()) {
             std::cout << "ICP-Aligning scan_" << i << " to scan_" << pcl_tool.transformations[i-1].parent_id << std::endl;
             start_timer_();
             transform_matrix_icp = pcl_tool.do_icp(cloud_in_transformed_filtered, cloud_targ_filtered);

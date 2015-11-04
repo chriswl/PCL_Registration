@@ -31,13 +31,11 @@
 //#include <pcl/registration/icp.h>
 #include <pcl/registration/icp_nl.h>
 #include <pcl/registration/transforms.h>
+#include <pcl/registration/gicp.h>
 
 #include "reg_visualizer.h"
 
 using namespace std;
-
-float MAX_CORRESPONDENCE_INIT = 1.0;
-float MAX_CORRESPONDENCE_STEP = 0.1;
 
 struct timespec t1_, t2_;
 double elapsed_time_;
@@ -392,13 +390,57 @@ Eigen::Matrix4f pcl_tools::apply_icp(pcl::PointCloud<PointT>::Ptr cloud_in, pcl:
     return transformation;
 }
 
-Eigen::Matrix4f pcl_tools::pairAlign (const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt)
-{
-    //
-    // Downsample for consistency and speed
-    // \note enable this for large datasets
-    pcl::VoxelGrid<PointT> grid;
+Eigen::Matrix4f pcl_tools::do_gicp(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt) {
+    // Instantiate our custom point representation (defined above) ...
+    MyPointRepresentation point_representation;
+    // ... and weight the 'curvature' dimension so that it is balanced against x, y, and z
+    float alpha[4] = {1.0, 1.0, 1.0, 1.0};
+    point_representation.setRescaleValues (alpha);
 
+    pcl::GeneralizedIterativeClosestPoint<PointT, PointT> reg;
+    reg.setTransformationEpsilon (1e-6);
+    // Set the maximum distance between two correspondences (src<->tgt) to 10cm
+    // Note: adjust this based on the size of your datasets
+    reg.setMaxCorrespondenceDistance (config_->get_init_max_correspondence_distance());
+    reg.setEuclideanFitnessEpsilon(0.01);
+    // Set the point representation
+    /* reg.setPointRepresentation (boost::make_shared<const MyPointRepresentation> (point_representation)); */
+
+    reg.setInputSource (cloud_src);
+    reg.setInputTarget (cloud_tgt);
+
+    // Run the same optimization in a loop and visualize the results
+    Eigen::Matrix4f Ti = Eigen::Matrix4f::Identity (), prev, targetToSource;
+    PointCloud::Ptr reg_result = cloud_src;
+
+    reg.setMaximumIterations (1000);
+    for (int i = 0; i < 10; ++i) {
+        PCL_INFO ("Iteration Nr. %d.\n", i);
+
+        // save cloud for visualization purpose
+        /* points_with_normals_src = reg_result; */
+
+        // Estimate
+        reg.setInputSource (cloud_src);
+        reg.align (*reg_result);
+
+        //accumulate transformation between each Iteration
+        Ti = reg.getFinalTransformation () * Ti;
+
+        //if the difference between this transformation and the previous one
+        //is smaller than the threshold, refine the process by reducing
+        //the maximal correspondence distance
+        if (fabs ((reg.getLastIncrementalTransformation () - prev).sum ()) < reg.getTransformationEpsilon ()){
+            reg.setMaxCorrespondenceDistance (reg.getMaxCorrespondenceDistance () - config_->get_max_correspondence_distance_step());
+        }
+
+        prev = reg.getLastIncrementalTransformation ();
+    }
+    return Ti;
+}
+
+
+Eigen::Matrix4f pcl_tools::do_icp(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt) {
     // Compute surface normals and curvature
     PointCloudWithNormals::Ptr points_with_normals_src (new PointCloudWithNormals);
     PointCloudWithNormals::Ptr points_with_normals_tgt (new PointCloudWithNormals);
@@ -416,7 +458,6 @@ Eigen::Matrix4f pcl_tools::pairAlign (const PointCloud::Ptr cloud_src, const Poi
     norm_est.compute (*points_with_normals_tgt);
     pcl::copyPointCloud (*cloud_tgt, *points_with_normals_tgt);
 
-    //
     // Instantiate our custom point representation (defined above) ...
     MyPointRepresentation point_representation;
     // ... and weight the 'curvature' dimension so that it is balanced against x, y, and z
@@ -429,7 +470,7 @@ Eigen::Matrix4f pcl_tools::pairAlign (const PointCloud::Ptr cloud_src, const Poi
     reg.setTransformationEpsilon (1e-6);
     // Set the maximum distance between two correspondences (src<->tgt) to 10cm
     // Note: adjust this based on the size of your datasets
-    reg.setMaxCorrespondenceDistance (MAX_CORRESPONDENCE_INIT);
+    reg.setMaxCorrespondenceDistance (config_->get_init_max_correspondence_distance());
     reg.setEuclideanFitnessEpsilon(0.01);
     // Set the point representation
     reg.setPointRepresentation (boost::make_shared<const MyPointRepresentation> (point_representation));
@@ -441,8 +482,7 @@ Eigen::Matrix4f pcl_tools::pairAlign (const PointCloud::Ptr cloud_src, const Poi
     Eigen::Matrix4f Ti = Eigen::Matrix4f::Identity (), prev, targetToSource;
     PointCloudWithNormals::Ptr reg_result = points_with_normals_src;
     reg.setMaximumIterations (1000);
-    for (int i = 0; i < 10; ++i)
-    {
+    for (int i = 0; i < 10; ++i) {
         PCL_INFO ("Iteration Nr. %d.\n", i);
 
         // save cloud for visualization purpose
@@ -459,10 +499,7 @@ Eigen::Matrix4f pcl_tools::pairAlign (const PointCloud::Ptr cloud_src, const Poi
         //is smaller than the threshold, refine the process by reducing
         //the maximal correspondence distance
         if (fabs ((reg.getLastIncrementalTransformation () - prev).sum ()) < reg.getTransformationEpsilon ()){
-            /*if(reg.getMaxCorrespondenceDistance () - MAX_CORRESPONDENCE_STEP <= 0){
-                i += 100;
-            }*/
-            reg.setMaxCorrespondenceDistance (reg.getMaxCorrespondenceDistance () - MAX_CORRESPONDENCE_STEP);
+            reg.setMaxCorrespondenceDistance (reg.getMaxCorrespondenceDistance () - config_->get_max_correspondence_distance_step());
         }
 
         prev = reg.getLastIncrementalTransformation ();
@@ -509,7 +546,7 @@ int pcl_tools::apply_icp(string path_in, string path_out){
     return 0;
 }
 
-Eigen::Matrix4f pcl_tools::apply_ndt(pcl::PointCloud<PointT>::Ptr cloud_in, pcl::PointCloud<PointT>::Ptr target_cloud, Eigen::Matrix4f init_guess){
+Eigen::Matrix4f pcl_tools::do_ndt(pcl::PointCloud<PointT>::Ptr cloud_in, pcl::PointCloud<PointT>::Ptr target_cloud, Eigen::Matrix4f init_guess){
 
     //start_timer();
     // Initializing Normal Distributions Transform (NDT).

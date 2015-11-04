@@ -65,23 +65,37 @@ int main(int argc, char **argv) {
 
     pcl_tool.getInitialGuesses(config->get_tf_directory() + "initial_guesses.txt");
 
-    fstream icp_result, ndt_result;
-    icp_result.open((config->get_tf_directory() + "icp_results.txt").c_str(), ios::out);
-    ndt_result.open((config->get_tf_directory() + "ndt_results.txt").c_str(), ios::out);
-
+    fstream icp_result, ndt_result, gicp_result_fh;
     fstream overall_icp, overall_ndt;
-    overall_icp.open((config->get_tf_directory() + "overall_icp.txt").c_str(), ios::out);
-    overall_ndt.open((config->get_tf_directory() + "overall_ndt.txt").c_str(), ios::out);
+    if (config->do_icp()) {
+        icp_result.open((config->get_tf_directory() + "icp_results.txt").c_str(), ios::out);
+        overall_icp.open((config->get_tf_directory() + "overall_icp.txt").c_str(), ios::out);
+    }
+    if (config->do_ndt()) {
+        ndt_result.open((config->get_tf_directory() + "ndt_results.txt").c_str(), ios::out);
+        overall_ndt.open((config->get_tf_directory() + "overall_ndt.txt").c_str(), ios::out);
+    }
+    if (config->do_gicp()) 
+        gicp_result_fh.open((config->get_tf_directory() + "gicp_results.txt").c_str(), ios::out);
+
 
     for(int i=1; i<=pcl_tool.MAX_NUM_SCANS; i++){
         if(pcl_tool.transformations[i-1].is_parent){
             std::cout << "scan_" << i <<  " is a parent transformation" << std::endl;
-            overall_icp << "scan_" << i <<  " to scan_" << i << " \n1 0 0 0\n0 1 0 0\n0 0 1 0\n0 0 0 1\n\n";
-            overall_ndt << "scan_" << i <<  " to scan_" << i << " \n1 0 0 0\n0 1 0 0\n0 0 1 0\n0 0 0 1\n\n";
-            icp_result << "scan_" << i << " to scan_" << i << std::endl;
-            icp_result << pcl_tool.transformations[i-1].init_guess << std::endl << std::endl;
-            ndt_result << "scan_" << i << " to scan_" << i << std::endl;
-            ndt_result << pcl_tool.transformations[i-1].init_guess << std::endl << std::endl;
+            if (config->do_icp()) {
+                overall_icp << "scan_" << i <<  " to scan_" << i << " \n1 0 0 0\n0 1 0 0\n0 0 1 0\n0 0 0 1\n\n";
+                icp_result << "scan_" << i << " to scan_" << i << std::endl;
+                icp_result << pcl_tool.transformations[i-1].init_guess << std::endl << std::endl;
+            }
+            if (config->do_ndt()) {
+                ndt_result << "scan_" << i << " to scan_" << i << std::endl;
+                ndt_result << pcl_tool.transformations[i-1].init_guess << std::endl << std::endl;
+                overall_ndt << "scan_" << i <<  " to scan_" << i << " \n1 0 0 0\n0 1 0 0\n0 0 1 0\n0 0 0 1\n\n";
+            }
+            if (config->do_gicp()) {
+                gicp_result_fh << "scan_" << i << " to scan_" << i << std::endl;
+                gicp_result_fh << pcl_tool.transformations[i-1].init_guess << std::endl << std::endl;
+            }
             continue;
         }
 
@@ -90,7 +104,7 @@ int main(int argc, char **argv) {
             continue;
         }
 
-        if(pcl_tool.transformations[i-1].parent_id>83 || pcl_tool.transformations[i-1].parent_id<1) {
+        if(pcl_tool.transformations[i-1].parent_id > 83 || pcl_tool.transformations[i-1].parent_id < 1) {
             std::cout << "Parent id problematic, scan_" << i << " is being skipped" << std::endl;
             continue;
         }
@@ -172,24 +186,37 @@ int main(int argc, char **argv) {
         if (config->do_ndt()) {
             std::cout << "Applying NDT" << std::endl;
             start_timer_();
-            transform_matrix_ndt = pcl_tool.apply_ndt(cloud_in_transformed_filtered, cloud_targ_filtered, ndt_init_guess);
+            transform_matrix_ndt = pcl_tool.do_ndt(cloud_in_transformed_filtered, cloud_targ_filtered, ndt_init_guess);
             end_timer_("NDT completed in:");
 
             ndt_result << "scan_" << i << " to scan_" << pcl_tool.transformations[i-1].parent_id << std::endl;
             ndt_result << transform_matrix_ndt << std::endl << std::endl;
         }
 
+        Eigen::Matrix4f transform_matrix_gicp;
+        if (config->do_gicp()) {
+            std::cout << "Applying GICP" << std::endl;
+            start_timer_();
+            transform_matrix_gicp = pcl_tool.do_gicp(cloud_in_transformed_filtered, cloud_targ_filtered);
+            end_timer_(" completed in:");
 
-        std::cout << "ICP-Aligning scan_" << i << " to scan_" << pcl_tool.transformations[i-1].parent_id << std::endl;
-        start_timer_();
-        //Eigen::Matrix4f transform_matrix_icp = pcl_tool.apply_icp(cloud_in_transformed_filtered, cloud_targ_filtered, false);
-        Eigen::Matrix4f transform_matrix_icp = pcl_tool.pairAlign(cloud_in_transformed_filtered, cloud_targ_filtered);
-        end_timer_("Pair aligned in:");
+            gicp_result_fh << "scan_" << i << " to scan_" << pcl_tool.transformations[i-1].parent_id << std::endl;
+            gicp_result_fh << transform_matrix_gicp << std::endl << std::endl;
+        }
 
-        // write pairwise transforms to file
-        icp_result << "scan_" << i << " to scan_" << pcl_tool.transformations[i-1].parent_id << std::endl;
-        icp_result << transform_matrix_icp << std::endl << std::endl;
+        Eigen::Matrix4f transform_matrix_icp;
+        if (config->do_gicp()) {
+            std::cout << "ICP-Aligning scan_" << i << " to scan_" << pcl_tool.transformations[i-1].parent_id << std::endl;
+            start_timer_();
+            transform_matrix_icp = pcl_tool.do_icp(cloud_in_transformed_filtered, cloud_targ_filtered);
+            end_timer_("Pair aligned in:");
 
+            // write pairwise transforms to file
+            icp_result << "scan_" << i << " to scan_" << pcl_tool.transformations[i-1].parent_id << std::endl;
+            icp_result << transform_matrix_icp << std::endl << std::endl;
+        }
+
+        // break if parent transforms are not complete
         if (!pcl_tool.transformations[pcl_tool.transformations[i-1].parent_id-1].completed){
             std::cerr << "Parent transformation is not completed for scan_" << i << std::endl;
             cloud_in.reset();
@@ -202,8 +229,11 @@ int main(int argc, char **argv) {
         if (config->do_ndt()) {
             pcl_tool.transformations[i-1].T_ndt = pcl_tool.transformations[pcl_tool.transformations[i-1].parent_id-1].T_ndt * transform_matrix_ndt * pcl_tool.transformations[i-1].init_guess;
         }
-        pcl_tool.transformations[i-1].T = pcl_tool.transformations[pcl_tool.transformations[i-1].parent_id-1].T * transform_matrix_icp * pcl_tool.transformations[i-1].init_guess;
+        if (config->do_icp()) {
+            pcl_tool.transformations[i-1].T = pcl_tool.transformations[pcl_tool.transformations[i-1].parent_id-1].T * transform_matrix_icp * pcl_tool.transformations[i-1].init_guess;
+        }
         pcl_tool.transformations[i-1].completed = true;
+
 
         // save transformed point cloud
         stringstream output_filename;
@@ -219,11 +249,16 @@ int main(int argc, char **argv) {
         // seems like this relies on the numbers in the transform tree being ascending
         int top_parent = pcl_tool.topMostParent(i);
         if(top_parent >= 1 && top_parent <= pcl_tool.MAX_NUM_SCANS){
-            overall_icp << "scan_" << i << " to scan_" << top_parent << std::endl;
-            overall_icp << pcl_tool.transformations[i-1].T << std::endl << std::endl;
 
-            overall_ndt << "scan_" << i << " to scan_" << top_parent << std::endl;
-            overall_ndt << pcl_tool.transformations[i-1].T_ndt << std::endl << std::endl;
+            if (config->do_icp()) {
+                overall_icp << "scan_" << i << " to scan_" << top_parent << std::endl;
+                overall_icp << pcl_tool.transformations[i-1].T << std::endl << std::endl;
+            }
+
+            if (config->do_ndt()) {
+                overall_ndt << "scan_" << i << " to scan_" << top_parent << std::endl;
+                overall_ndt << pcl_tool.transformations[i-1].T_ndt << std::endl << std::endl;
+            }
         }
 
         cloud_in.reset();
@@ -233,10 +268,16 @@ int main(int argc, char **argv) {
         cloud_targ_rgb.reset();
     }
 
-    icp_result.close();
-    ndt_result.close();
-    overall_icp.close();
-    overall_ndt.close();
+    if (config->do_icp()) {
+        icp_result.close();
+        overall_icp.close();
+    }
+    if (config->do_gicp()) {
+        gicp_result_fh.close(); }
+    if (config->do_ndt()) {
+        ndt_result.close();
+        overall_ndt.close();
+    }
 
     return 0;
 }

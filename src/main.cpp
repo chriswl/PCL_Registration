@@ -75,12 +75,12 @@ int main(int argc, char **argv) {
         ndt_result.open((config->get_tf_directory() + "ndt_results.txt").c_str(), ios::out);
         overall_ndt.open((config->get_tf_directory() + "overall_ndt.txt").c_str(), ios::out);
     }
-    if (config->do_gicp()) 
+    if (config->do_gicp())
         gicp_result_fh.open((config->get_tf_directory() + "gicp_results.txt").c_str(), ios::out);
 
 
     for(int i=1; i<=pcl_tool.MAX_NUM_SCANS; i++){
-        if(pcl_tool.transformations[i-1].is_parent){
+        if(pcl_tool.transformations[i-1].is_root){
             std::cout << "scan_" << i <<  " is a parent transformation" << std::endl;
             if (config->do_icp()) {
                 overall_icp << "scan_" << i <<  " to scan_" << i << " \n1 0 0 0\n0 1 0 0\n0 0 1 0\n0 0 0 1\n\n";

@@ -27,7 +27,7 @@ public:
     int MAX_NUM_SCANS;
     struct transformation_relation{
         //int id;
-        bool is_parent;
+        bool is_root;
         int parent_id;
         Eigen::Matrix4f init_guess;
         Eigen::Matrix4f T;

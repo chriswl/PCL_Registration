@@ -92,13 +92,9 @@ pcl_tools::pcl_tools(params *config)
 {
     config_ = config;
     MAX_NUM_SCANS = 83;
-    /*transformations[0].parent_id = -5;
-    transformations[0].T.setIdentity();
-    transformations[0].completed = true;
-    transformations[0].is_parent = true;*/
-    for(int i=0; i<MAX_NUM_SCANS; i++){
+    for(int i=0; i < MAX_NUM_SCANS; i++){
         transformations[i].completed = false;
-        transformations[i].is_parent = false;
+        transformations[i].is_root = false;
         transformations[i].T.setIdentity();
         transformations[i].T_ndt.setIdentity();
         transformations[i].ok = false;
@@ -179,12 +175,12 @@ int pcl_tools::topMostParent(int id){
     if(transformations[id-1].ok == false){
         return -1;
     }
-    if(transformations[id-1].is_parent){
+    if(transformations[id-1].is_root){
         return id;
     }
     transformation_relation current_transform;
     current_transform = transformations[id-1];
-    while(current_transform.is_parent==false){
+    while(current_transform.is_root==false){
         current_transform = transformations[current_transform.parent_id-1];
         if(current_transform.ok == false){
             return -1;
@@ -238,10 +234,10 @@ int pcl_tools::getInitialGuesses(string filename){
         }
         if(input==target){
             transformations[input-1].completed = true;
-            transformations[input-1].is_parent = true;
+            transformations[input-1].is_root = true;
         }
         else{
-            transformations[input-1].is_parent = false;
+            transformations[input-1].is_root = false;
         }
         Eigen::Vector3f translation_vector(t1, t2, t3);
         Eigen::Matrix3f rotation_matrix = quaternion_to_rotation(x, y, z, w);
@@ -312,7 +308,7 @@ int pcl_tools::computeGlobalTransformations(){
     overall_ndt.open((config_->get_tf_directory() + "overall_ndt.txt").c_str(), ios::out);
 
     for(int i=0; i<MAX_NUM_SCANS; i++){
-        if(transformations[i-1].is_parent){
+        if(transformations[i-1].is_root){
             transformations[i-1].T = transformations[i-1].init_guess;
             transformations[i-1].T_ndt = transformations[i-1].init_guess;
             overall_icp << "scan_" << i << " to scan_" << i << std::endl;

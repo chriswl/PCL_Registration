@@ -49,7 +49,6 @@ class pcl_tools {
         Eigen::Matrix4f createTransformationMatrix(Eigen::Matrix3f rotation, Eigen::Vector3f translation);
         void getPCDStatistics(std::string dir, int low_ind, int up_ind);
         pcl::PointCloud<PointT>::Ptr projectPCD(pcl::PointCloud<PointT>::Ptr cloud, float a, float b, float c, float d);
-        Eigen::Matrix4f getInitialGuess(int input, int target);
         Eigen::Matrix4f getTransformation(int input, int target);
         int getInitialGuesses(std::string filename);
         int getTransformations(std::string filename, Eigen::Matrix4f transformation_matrices[]);

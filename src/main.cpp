@@ -272,7 +272,8 @@ int main(int argc, char **argv) {
         overall_icp.close();
     }
     if (config->do_gicp()) {
-        gicp_result_fh.close(); }
+        gicp_result_fh.close();
+    }
     if (config->do_ndt()) {
         ndt_result.close();
         overall_ndt.close();

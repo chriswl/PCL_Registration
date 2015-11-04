@@ -119,57 +119,6 @@ Eigen::Matrix4f pcl_tools::createTransformationMatrix(Eigen::Matrix3f rotation, 
     return Trans;
 }
 
-Eigen::Matrix4f pcl_tools::getInitialGuess(int input, int target){
-    string tline;
-    fstream fid;
-    std::string initial_guess_filename = config_->get_initial_estimate_path();
-    if (!file_exist(initial_guess_filename.c_str())) {
-        std::cout << "Can not find initial guesses; exiting" << std::endl;
-        throw std::invalid_argument( "no initial guess" );
-    }
-
-    fid.open(initial_guess_filename.c_str(), ios::in);
-    getline(fid, tline);
-    stringstream transform_pair;
-    transform_pair << "scan_" << input << " to " << "scan_" << target;
-    while(tline.find(transform_pair.str())==string::npos && !fid.eof()){
-        getline(fid, tline);
-    }
-    if(fid.eof()){
-        std::cout << "Transformation from scan_" << input << " to scan_" << target << " not found" << std::endl;
-        fid.close();
-        return Eigen::Matrix4f::Zero();
-    }
-    getline(fid, tline);
-    float t1, t2, t3;
-    float x, y, z, w;
-    if(tline.find("- Translation: [")!=string::npos && !fid.eof()){
-        sscanf(tline.c_str(), "- Translation: [%f, %f, %f]", &t1, &t2, &t3);
-        getline(fid, tline);
-    }
-    else{
-        cout << "Erronous file format" << endl;
-        fid.close();
-        return Eigen::Matrix4f::Zero();
-    }
-    if(tline.find("- Rotation: in Quaternion [")!=string::npos && !fid.eof()){
-        sscanf(tline.c_str(), "- Rotation: in Quaternion [%f, %f, %f, %f]", &x, &y, &z, &w);
-        getline(fid, tline);
-    }
-    else{
-        cout << "Erronous file format" << endl;
-        fid.close();
-        return Eigen::Matrix4f::Zero();
-    }
-    Eigen::Vector3f translation_vector(t1, t2, t3);
-    Eigen::Matrix3f rotation_matrix = quaternion_to_rotation(x, y, z, w);
-    return createTransformationMatrix(rotation_matrix, translation_vector);
-    //cout << "Translation: " << t1 << " " << t2 << " " << t3 << endl;
-    //cout << "Rotation: " << x << " " << y << " " << z << " " << w << endl;
-    //cout << endl;
-    fid.close();
-}
-
 int pcl_tools::topMostParent(int id){
     if(transformations[id-1].ok == false){
         return -1;

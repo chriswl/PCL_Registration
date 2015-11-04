@@ -29,6 +29,7 @@ int read_config(int ac, char* av[], po::variables_map &vm) {
         po::options_description hidden("Hidden options");
         hidden.add_options()
             ("tf_directory", po::value<string>()->default_value("/home/landsiedel/data/labels/transforms/"))
+            ("initial_guesses_filename", po::value<string>()->default_value("overall_initial_estimates.txt"))
             ("original_pointcloud_directory", po::value<string>()->default_value("/home/landsiedel/data/scans/original/"))
             ("quaternion_directory", po::value<string>()->default_value("/home/landsiedel/data/transforms/quaternions/"))
             ("output_scan_directory", po::value<string>()->default_value("/home/landsiedel/data/scans/transformed_scans/"))

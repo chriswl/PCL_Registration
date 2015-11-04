@@ -20,6 +20,7 @@ params::params(po::variables_map vm) {
     do_icp_ = vm["do_icp"].as<bool>();
     do_ndt_ = vm["do_ndt"].as<bool>();
     do_gicp_ = vm["do_gicp"].as<bool>();
+    initial_guesses_filename_ = vm["initial_guesses_filename"].as<string>();
 }
 
 std::string params::get_tf_directory() { return tf_directory_;};
@@ -38,4 +39,8 @@ std::string params::get_scan_filename(int scan_ix) {
     std::stringstream ss;
     ss << original_pointcloud_directory_ << "cuboids_irgblabel_" << std::setw(2) << std::setfill('0') << scan_ix << "." << resolution_ << ".pcd";
     return ss.str();
+}
+
+std::string params::get_initial_estimate_path() {
+    return tf_directory_ + initial_guesses_filename_;
 }

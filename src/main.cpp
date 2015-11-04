@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
 
     pcl_tools pcl_tool(config);
 
-    pcl_tool.getInitialGuesses(config->get_tf_directory() + "initial_guesses.txt");
+    pcl_tool.getInitialGuesses(config->get_initial_estimate_path());
 
     fstream icp_result, ndt_result, gicp_result_fh;
     fstream overall_icp, overall_ndt;

@@ -21,7 +21,9 @@ int read_config(int ac, char* av[], po::variables_map &vm) {
         // Declare a group of options that will be
         // allowed only on command line
         po::options_description generic("Generic options");
-        generic.add_options()( "config,c", po::value<string>(&config_file)->default_value("multiple_sources.cfg"),
+        generic.add_options()
+            ("scan_ix", po::value<int>()->default_value(-1), "scan index")
+            ("config,c", po::value<string>(&config_file)->default_value("multiple_sources.cfg"),
                 "name of a file of a configuration.");
 
         // Hidden options, will be allowed both on command line and
@@ -44,7 +46,10 @@ int read_config(int ac, char* av[], po::variables_map &vm) {
         po::options_description cmdline_options;
         cmdline_options.add(generic);
 
-        store(po::command_line_parser(ac, av).options(cmdline_options).run(), vm);
+        po::positional_options_description p;
+        p.add("scan_ix", 1);
+
+        store(po::command_line_parser(ac, av).options(cmdline_options).positional(p).run(), vm);
         notify(vm);
 
         po::options_description config_file_options;
@@ -60,7 +65,7 @@ int read_config(int ac, char* av[], po::variables_map &vm) {
         }
 
     } catch (exception& e) {
-        cout << e.what() << "\n";
+        cerr << "CL parsing Error: " << e.what() << "\n";
         return 1;
     }
     return 0;

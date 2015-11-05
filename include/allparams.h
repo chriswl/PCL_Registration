@@ -20,6 +20,7 @@ class params {
         bool do_icp();
         bool do_ndt();
         bool do_gicp();
+        int get_n_iterations();
 
         std::string get_scan_filename(int scan_ix);
 
@@ -36,6 +37,7 @@ class params {
         bool do_ndt_;
         bool do_icp_;
         bool do_gicp_;
+        int n_iterations_;
 };
 
 #endif

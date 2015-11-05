@@ -41,6 +41,7 @@ int read_config(int ac, char* av[], po::variables_map &vm) {
             ("do_icp", po::value<bool>()->default_value(true))
             ("do_ndt", po::value<bool>()->default_value(true))
             ("do_gicp", po::value<bool>()->default_value(true))
+            ("n_iterations", po::value<int>()->default_value(10))
             ("filter_xy_range", po::value<bool>()->default_value(false));
 
         po::options_description cmdline_options;

@@ -408,12 +408,8 @@ Eigen::Matrix4f pcl_tools::do_icp(const PointCloud::Ptr cloud_src, const PointCl
     float alpha[4] = {1.0, 1.0, 1.0, 1.0};
     point_representation.setRescaleValues (alpha);
 
-    //
-    // Align
     pcl::IterativeClosestPointNonLinear<PointNormalT, PointNormalT> reg;
     reg.setTransformationEpsilon (1e-6);
-    // Set the maximum distance between two correspondences (src<->tgt) to 10cm
-    // Note: adjust this based on the size of your datasets
     reg.setMaxCorrespondenceDistance (config_->get_init_max_correspondence_distance());
     reg.setEuclideanFitnessEpsilon(0.01);
     // Set the point representation
@@ -426,8 +422,8 @@ Eigen::Matrix4f pcl_tools::do_icp(const PointCloud::Ptr cloud_src, const PointCl
     Eigen::Matrix4f Ti = Eigen::Matrix4f::Identity (), prev, targetToSource;
     PointCloudWithNormals::Ptr reg_result = points_with_normals_src;
     reg.setMaximumIterations (1000);
-    for (int i = 0; i < 10; ++i) {
-        PCL_INFO ("Iteration Nr. %d.\n", i);
+    for (int i = 0; i < config_->get_n_iterations(); ++i) {
+        PCL_INFO("Iteration Nr. %d.\n", i);
 
         // save cloud for visualization purpose
         points_with_normals_src = reg_result;

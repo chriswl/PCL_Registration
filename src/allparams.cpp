@@ -20,6 +20,7 @@ params::params(po::variables_map vm) {
     do_icp_ = vm["do_icp"].as<bool>();
     do_ndt_ = vm["do_ndt"].as<bool>();
     do_gicp_ = vm["do_gicp"].as<bool>();
+    n_iterations_ = vm["n_iterations"].as<int>();
     initial_guesses_filename_ = vm["initial_guesses_filename"].as<string>();
 }
 
@@ -34,6 +35,7 @@ bool params::get_filter_xy_range() { return filter_xy_range_; };
 bool params::do_icp() { return do_icp_; };
 bool params::do_ndt() { return do_ndt_; };
 bool params::do_gicp() { return do_gicp_; };
+int params::get_n_iterations() { return n_iterations_; };
 
 std::string params::get_scan_filename(int scan_ix) {
     std::stringstream ss;

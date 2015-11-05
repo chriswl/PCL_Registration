@@ -66,31 +66,6 @@ int main(int argc, char **argv) {
 
     int scan_ix = vm["scan_ix"].as<int>();
 
-    fstream icp_result, ndt_result, gicp_result_fh;
-    if (config->do_icp()) {
-        icp_result.open(static_cast<std::ostringstream&>(std::ostringstream().flush() << config->get_tf_directory() << "icp_results" << scan_ix << ".txt").str().c_str(), ios::out); }
-    if (config->do_ndt()) {
-        ndt_result.open(static_cast<std::ostringstream&>(std::ostringstream().flush() << config->get_tf_directory() << "ndt_results" << scan_ix << ".txt").str().c_str(), ios::out); }
-    if (config->do_gicp()) {
-        gicp_result_fh.open(static_cast<std::ostringstream&>(std::ostringstream().flush() << config->get_tf_directory() << "gicp_results" << scan_ix << ".txt").str().c_str(), ios::out); }
-
-    if(pcl_tool.transformations[scan_ix-1].is_root){
-        std::cout << "scan_" << scan_ix <<  " is a parent transformation" << std::endl;
-        if (config->do_icp()) {
-            icp_result << "scan_" << scan_ix << " to scan_" << scan_ix << std::endl;
-            icp_result << pcl_tool.transformations[scan_ix-1].init_guess << std::endl << std::endl;
-        }
-        if (config->do_ndt()) {
-            ndt_result << "scan_" << scan_ix << " to scan_" << scan_ix << std::endl;
-            ndt_result << pcl_tool.transformations[scan_ix-1].init_guess << std::endl << std::endl;
-        }
-        if (config->do_gicp()) {
-            gicp_result_fh << "scan_" << scan_ix << " to scan_" << scan_ix << std::endl;
-            gicp_result_fh << pcl_tool.transformations[scan_ix-1].init_guess << std::endl << std::endl;
-        }
-        return 0;
-    }
-
     if (!pcl_tool.transformations[scan_ix-1].ok) {
         std::cout << "Transformation problematic, scan_" << scan_ix << " is being skipped" << std::endl;
         return 0;
@@ -150,6 +125,31 @@ int main(int argc, char **argv) {
         std::cout << target_filename << " empty" << std::endl;
         cloud_in.reset();
         cloud_targ.reset();
+        return 0;
+    }
+
+    fstream icp_result, ndt_result, gicp_result_fh;
+    if (config->do_icp()) {
+        icp_result.open(static_cast<std::ostringstream&>(std::ostringstream().flush() << config->get_tf_directory() << "icp_results" << scan_ix << ".txt").str().c_str(), ios::out); }
+    if (config->do_ndt()) {
+        ndt_result.open(static_cast<std::ostringstream&>(std::ostringstream().flush() << config->get_tf_directory() << "ndt_results" << scan_ix << ".txt").str().c_str(), ios::out); }
+    if (config->do_gicp()) {
+        gicp_result_fh.open(static_cast<std::ostringstream&>(std::ostringstream().flush() << config->get_tf_directory() << "gicp_results" << scan_ix << ".txt").str().c_str(), ios::out); }
+
+    if(pcl_tool.transformations[scan_ix-1].is_root){
+        std::cout << "scan_" << scan_ix <<  " is a parent transformation" << std::endl;
+        if (config->do_icp()) {
+            icp_result << "scan_" << scan_ix << " to scan_" << scan_ix << std::endl;
+            icp_result << pcl_tool.transformations[scan_ix-1].init_guess << std::endl << std::endl;
+        }
+        if (config->do_ndt()) {
+            ndt_result << "scan_" << scan_ix << " to scan_" << scan_ix << std::endl;
+            ndt_result << pcl_tool.transformations[scan_ix-1].init_guess << std::endl << std::endl;
+        }
+        if (config->do_gicp()) {
+            gicp_result_fh << "scan_" << scan_ix << " to scan_" << scan_ix << std::endl;
+            gicp_result_fh << pcl_tool.transformations[scan_ix-1].init_guess << std::endl << std::endl;
+        }
         return 0;
     }
 

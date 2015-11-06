@@ -130,11 +130,11 @@ int main(int argc, char **argv) {
 
     fstream icp_result, ndt_result, gicp_result_fh;
     if (config->do_icp()) {
-        icp_result.open(static_cast<std::ostringstream&>(std::ostringstream().flush() << config->get_tf_directory() << "icp_results" << scan_ix << ".txt").str().c_str(), ios::out); }
+        icp_result.open(config->get_result_path("icp", scan_ix).c_str(), ios::out); }
     if (config->do_ndt()) {
-        ndt_result.open(static_cast<std::ostringstream&>(std::ostringstream().flush() << config->get_tf_directory() << "ndt_results" << scan_ix << ".txt").str().c_str(), ios::out); }
+        ndt_result.open(config->get_result_path("ndt", scan_ix).c_str(), ios::out); }
     if (config->do_gicp()) {
-        gicp_result_fh.open(static_cast<std::ostringstream&>(std::ostringstream().flush() << config->get_tf_directory() << "gicp_results" << scan_ix << ".txt").str().c_str(), ios::out); }
+        gicp_result_fh.open(config->get_result_path("gicp", scan_ix).c_str(), ios::out); }
 
     if(pcl_tool.transformations[scan_ix-1].is_root){
         std::cout << "scan_" << scan_ix <<  " is a parent transformation" << std::endl;

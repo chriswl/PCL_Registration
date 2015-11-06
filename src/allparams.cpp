@@ -46,3 +46,9 @@ std::string params::get_scan_filename(int scan_ix) {
 std::string params::get_initial_estimate_path() {
     return tf_directory_ + initial_guesses_filename_;
 }
+
+std::string params::get_result_path(std::string method, int scan_ix) {
+    return static_cast<std::ostringstream&>(std::ostringstream().flush() <<
+            this->get_tf_directory() << resolution_ << "/"
+            << method << "_results" << scan_ix << ".txt").str().c_str();
+}

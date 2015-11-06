@@ -23,6 +23,7 @@ class params {
         int get_n_iterations();
 
         std::string get_scan_filename(int scan_ix);
+        std::string get_result_path(std::string method, int scan_ix);
 
     private:
         std::string tf_directory_;
